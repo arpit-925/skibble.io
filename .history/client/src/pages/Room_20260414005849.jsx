@@ -6,14 +6,12 @@ import useSocket from "../hooks/useSocket";
 import Canvas from "../components/Canvas";
 import Chat from "../components/Chat";
 import Scoreboard from "../components/Scoreboard";
-import Lobby from "../components/Lobby";
 
 export default function Room() {
   const { roomId } = useParams();
   const location = useLocation();
   const name = location.state?.name;
 
-  const [gameStarted, setGameStarted] = useState(false);
   const [wordLength, setWordLength] = useState(0);
   const [timer, setTimer] = useState(60);
 
@@ -22,27 +20,7 @@ export default function Room() {
     return () => socket.off();
   }, []);
 
-  // 🎮 Start Game
-  useSocket("round_start", () => {
-    setGameStarted(true);
-  });
-
-  useSocket("word_length", (len) => {
-    setWordLength(len);
-  });
-
-  // Timer UI
-  useEffect(() => {
-    if (!gameStarted) return;
-
-    const i = setInterval(() => {
-      setTimer((t) => (t > 0 ? t - 1 : 60));
-    }, 1000);
-
-    return () => clearInterval(i);
-  }, [gameStarted]);
-
-  // WORD SELECTION
+  // Word selection
   useSocket("word_options", (options) => {
     const chosen = prompt("Choose:\n" + options.join(", "));
     if (chosen) {
@@ -50,21 +28,28 @@ export default function Room() {
     }
   });
 
-  // 🔴 SHOW LOBBY FIRST
-  if (!gameStarted) {
-    return <Lobby roomId={roomId} name={name} />;
-  }
+  useSocket("word_length", (len) => setWordLength(len));
 
-  // 🟢 GAME SCREEN
+  // Timer UI
+  useEffect(() => {
+    const i = setInterval(() => {
+      setTimer((t) => (t > 0 ? t - 1 : 60));
+    }, 1000);
+    return () => clearInterval(i);
+  }, []);
+
   return (
     <div className="h-screen flex flex-col bg-gray-100">
 
       {/* TOP BAR */}
       <div className="bg-white shadow p-3 flex justify-between">
-        <div>Word: {"_ ".repeat(wordLength)}</div>
-        <div className="text-red-500">⏱ {timer}s</div>
+        <div className="font-semibold">
+          Word: {"_ ".repeat(wordLength)}
+        </div>
+        <div className="text-red-500 font-bold">⏱ {timer}s</div>
       </div>
 
+      {/* MAIN */}
       <div className="flex flex-1">
 
         {/* CANVAS */}

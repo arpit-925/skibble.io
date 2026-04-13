@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import socket from "../socket/socket";
 import useSocket from "../hooks/useSocket";
-import Toolbar from "./Toolbar";
 
 export default function Canvas({ roomId }) {
   const canvasRef = useRef(null);
@@ -36,23 +35,18 @@ export default function Canvas({ roomId }) {
 
     socket.emit("draw", { roomId, x, y, color, size });
   };
-return (
-  <div className="flex flex-col items-center">
-    
-    {/* 🔥 TOOLBAR */}
-    <Toolbar roomId={roomId} setColor={setColor} setSize={setSize} />
 
-    <div className="bg-white p-4 rounded-xl shadow-lg">
-      <canvas
-        ref={canvasRef}
-        width={700}
-        height={500}
-        className="border rounded cursor-crosshair"
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={() => (drawing.current = false)}
-      />
-    </div>
+  return (
+  <div className="bg-white p-4 rounded-2xl shadow-xl">
+    <canvas
+      ref={canvasRef}
+      width={700}
+      height={500}
+      className="border rounded-lg cursor-crosshair"
+      onMouseDown={startDrawing}
+      onMouseMove={draw}
+      onMouseUp={() => (drawing.current = false)}
+    />
   </div>
 );
 }
