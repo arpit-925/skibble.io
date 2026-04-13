@@ -2,7 +2,7 @@ import { useState } from "react";
 import socket from "../socket/socket";
 
 export default function Toolbar({ roomId, setColor, setSize }) {
-  const [activeColor, setActiveColor] = useState("#000000");
+  const [activeColor, setActiveColor] = useState("black");
   const [activeSize, setActiveSize] = useState(3);
 
   const colors = [
@@ -31,21 +31,16 @@ export default function Toolbar({ roomId, setColor, setSize }) {
     socket.emit("canvas_clear", { roomId });
   };
 
-  const eraser = () => {
-    setActiveColor("eraser");
-    setColor("#ffffff"); // white = erase
-  };
-
   return (
-    <div className="bg-white shadow-lg rounded-xl p-4 mb-3">
+    <div className="bg-white shadow-md rounded-xl p-3 mb-3 w-fit">
 
       {/* 🎨 COLORS */}
-      <div className="flex gap-2 mb-4 justify-center">
+      <div className="flex gap-2 mb-3">
         {colors.map((c, i) => (
           <button
             key={i}
             onClick={() => handleColor(c)}
-            className={`w-7 h-7 rounded-full border-2 transition ${
+            className={`w-6 h-6 rounded-full border-2 transition ${
               activeColor === c
                 ? "border-black scale-110"
                 : "border-gray-300"
@@ -56,15 +51,15 @@ export default function Toolbar({ roomId, setColor, setSize }) {
       </div>
 
       {/* 🖌 BRUSH SIZE */}
-      <div className="flex gap-2 mb-4 justify-center">
+      <div className="flex gap-2 mb-3">
         {sizes.map((s, i) => (
           <button
             key={i}
             onClick={() => handleSize(s)}
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded text-sm ${
               activeSize === s
                 ? "bg-blue-500 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+                : "bg-gray-200"
             }`}
           >
             {s}px
@@ -72,29 +67,20 @@ export default function Toolbar({ roomId, setColor, setSize }) {
         ))}
       </div>
 
-      {/* 🧰 TOOLS */}
-      <div className="flex gap-2 justify-center">
-
-        {/* ERASER */}
+      {/* 🧹 ACTIONS */}
+      <div className="flex gap-2">
         <button
-          onClick={eraser}
-          className={`px-3 py-1 rounded ${
-            activeColor === "eraser"
-              ? "bg-gray-800 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          Eraser
-        </button>
-
-        {/* CLEAR */}
+  onClick={() => socket.emit("draw_undo", { roomId })}
+  className="bg-yellow-500 text-white px-3 py-1 rounded"
+>
+  Undo
+</button>
         <button
           onClick={clearCanvas}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
         >
           Clear
         </button>
-
       </div>
 
     </div>
