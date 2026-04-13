@@ -1,0 +1,23 @@
+# 1. Dependencies
+# Never upload these; they are unique to each OS
+node_modules/
+
+# 2. Environment Variables
+# Essential for security! Prevents leaking database URIs or Secrets
+.env
+.env.local
+
+# 3. Logs
+# Useful for debugging locally, but clutter for the repo
+logs/
+*.log
+npm-debug.log*
+
+# 4. Build Files
+# If you use TypeScript or a bundler
+dist/
+build/
+
+# 5. OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,14 @@
+# Ignore node_modules in any directory (root, client, or server)
+node_modules/
+
+# Ignore .env files specifically inside the server folder
+server/.env
+
+# Ignore build/dist folders in any directory
+dist/
+build/
+.vite/
+
+# System files
+.DS_Store
+.vscode/
