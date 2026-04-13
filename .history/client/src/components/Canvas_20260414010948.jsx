@@ -6,34 +6,32 @@ import Toolbar from "./Toolbar";
 export default function Canvas({ roomId }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
-  const prev = useRef({ x: 0, y: 0 });
 
   const [color, setColor] = useState("black");
   const [size, setSize] = useState(2);
 
-  // RECEIVE DRAW
-  useSocket("draw", ({ x, y, prevX, prevY, color, size }) => {
+  // 🔥 DRAW FROM OTHER USERS
+  useSocket("draw", ({ x, y, color, size }) => {
     const ctx = canvasRef.current.getContext("2d");
-
-    ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(x, y);
-
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
     ctx.lineCap = "round";
 
+    ctx.lineTo(x, y);
     ctx.stroke();
   });
 
   const startDrawing = (e) => {
     drawing.current = true;
 
+    const ctx = canvasRef.current.getContext("2d");
+    ctx.beginPath(); // IMPORTANT
+
     const rect = canvasRef.current.getBoundingClientRect();
-    prev.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    ctx.moveTo(
+      e.clientX - rect.left,
+      e.clientY - rect.top
+    );
   };
 
   const draw = (e) => {
@@ -45,44 +43,36 @@ export default function Canvas({ roomId }) {
 
     const ctx = canvasRef.current.getContext("2d");
 
-    // LOCAL DRAW
-    ctx.beginPath();
-    ctx.moveTo(prev.current.x, prev.current.y);
-    ctx.lineTo(x, y);
-
+    // 🔥 DRAW LOCALLY FIRST
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
     ctx.lineCap = "round";
 
+    ctx.lineTo(x, y);
     ctx.stroke();
 
-    // SEND
-    socket.emit("draw", {
-      roomId,
-      x,
-      y,
-      prevX: prev.current.x,
-      prevY: prev.current.y,
-      color,
-      size,
-    });
+    // 🔥 THEN SEND TO SERVER
+    socket.emit("draw", { roomId, x, y, color, size });
+  };
 
-    prev.current = { x, y };
+  const stopDrawing = () => {
+    drawing.current = false;
   };
 
   return (
     <div className="flex flex-col items-center">
+      
       <Toolbar roomId={roomId} setColor={setColor} setSize={setSize} />
 
       <canvas
         ref={canvasRef}
         width={700}
         height={500}
-        className="border rounded bg-white"
+        className="border rounded cursor-crosshair bg-white"
         onMouseDown={startDrawing}
         onMouseMove={draw}
-        onMouseUp={() => (drawing.current = false)}
-        onMouseLeave={() => (drawing.current = false)}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
       />
     </div>
   );

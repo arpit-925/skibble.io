@@ -13,10 +13,12 @@ const io = new Server(server, {
 });
 
 const rooms = {};
+
+// sample words (you can later use MongoDB)
 const words = ["apple", "car", "dog", "house", "tree"];
 
 function getRandomWords(count = 3) {
-  return [...words].sort(() => 0.5 - Math.random()).slice(0, count);
+  return words.sort(() => 0.5 - Math.random()).slice(0, count);
 }
 
 io.on("connection", (socket) => {
@@ -32,6 +34,7 @@ io.on("connection", (socket) => {
           round: 1,
           turn: 0,
           word: "",
+          started: false,
         },
       };
     }
@@ -46,6 +49,7 @@ io.on("connection", (socket) => {
     };
 
     room.players.push(player);
+
     socket.join(roomId);
 
     io.to(roomId).emit("player_list", {
@@ -56,18 +60,24 @@ io.on("connection", (socket) => {
 
   // START GAME
   socket.on("start_game", ({ roomId }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    room.game.started = true;
     startRound(roomId);
   });
 
   function startRound(roomId) {
     const room = rooms[roomId];
-    if (!room) return;
 
+    // reset guesses
     room.players.forEach((p) => (p.guessed = false));
 
     const drawer = room.players[room.game.turn];
+
     const options = getRandomWords();
 
+    // send word options only to drawer
     io.to(drawer.id).emit("word_options", options);
 
     io.to(roomId).emit("round_start", {
@@ -76,30 +86,19 @@ io.on("connection", (socket) => {
     });
   }
 
-  // WORD SELECT
+  // WORD CHOSEN
   socket.on("word_chosen", ({ roomId, word }) => {
     const room = rooms[roomId];
     if (!room) return;
 
     room.game.word = word;
+
     io.to(roomId).emit("word_length", word.length);
   });
 
-  // DRAW (FIXED - SINGLE HANDLER)
-  socket.on("draw", ({ roomId, x, y, prevX, prevY, color, size }) => {
-    socket.to(roomId).emit("draw", {
-      x,
-      y,
-      prevX,
-      prevY,
-      color,
-      size,
-    });
-  });
-
-  // CLEAR
-  socket.on("canvas_clear", ({ roomId }) => {
-    io.to(roomId).emit("canvas_clear");
+  // DRAW
+  socket.on("draw", ({ roomId, x, y, color, size }) => {
+    socket.to(roomId).emit("draw", { x, y, color, size });
   });
 
   // CHAT / GUESS
@@ -107,8 +106,9 @@ io.on("connection", (socket) => {
     const room = rooms[roomId];
     if (!room) return;
 
-    const player = room.players.find((p) => p.id === socket.id);
+    const player = room.players.find(p => p.id === socket.id);
 
+    // normalize
     const guess = text.trim().toLowerCase();
     const actual = room.game.word.toLowerCase();
 
@@ -117,13 +117,15 @@ io.on("connection", (socket) => {
       player.score += 10;
 
       io.to(roomId).emit("guess_result", {
+        correct: true,
         playerName: player.name,
         points: 10,
       });
 
+      // check if all guessed
       const allGuessed = room.players
-        .filter((p) => p.id !== room.players[room.game.turn].id)
-        .every((p) => p.guessed);
+        .filter(p => p.id !== room.players[room.game.turn].id)
+        .every(p => p.guessed);
 
       if (allGuessed) nextTurn(roomId);
     } else {
@@ -149,6 +151,14 @@ io.on("connection", (socket) => {
     setTimeout(() => startRound(roomId), 2000);
   }
 
+  // CLEAR
+  socket.on("canvas_clear", ({ roomId }) => {
+    io.to(roomId).emit("canvas_clear");
+  });
+  socket.on("draw", ({ roomId, x, y, color, size }) => {
+  socket.to(roomId).emit("draw", { x, y, color, size });
+});
+
   // DISCONNECT
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
@@ -166,7 +176,6 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+server.listen(5000, () => {
+  console.log("🚀 Server running on port 5000");
+});
