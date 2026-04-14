@@ -1,3 +1,1 @@
-const rooms = {};
-
-module.exports = rooms;
+module.exports = new Map();

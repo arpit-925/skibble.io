@@ -1,33 +1,43 @@
 import { useState } from "react";
 import socket from "../socket/socket";
-import useSocket from "../hooks/useSocket";
 
-export default function Chat({ roomId }) {
-  const [msg, setMsg] = useState("");
-  const [messages, setMessages] = useState([]);
+export default function Chat({ roomId, messages, disabled, isDrawer }) {
+  const [text, setText] = useState("");
 
-  useSocket("chat_message", (data) => {
-    setMessages((prev) => [...prev, `${data.playerName}: ${data.text}`]);
-  });
-
-  const send = () => {
-    socket.emit("chat", { roomId, text: msg });
-    setMsg("");
+  const send = (event) => {
+    event.preventDefault();
+    const value = text.trim();
+    if (!value) return;
+    socket.emit(isDrawer ? "chat" : "guess", { roomId, text: value });
+    setText("");
   };
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 overflow-y-auto p-2">
-        {messages.map((m, i) => <p key={i}>{m}</p>)}
+    <section className="panel chat-panel">
+      <div className="panel-header">
+        <h2>Chat</h2>
+        <span>{isDrawer ? "Talk" : "Guess"}</span>
       </div>
 
-      <div className="flex">
-        <input
-          className="flex-1 border p-1"
-          onChange={(e) => setMsg(e.target.value)}
-        />
-        <button onClick={send}>Send</button>
+      <div className="message-list">
+        {messages.map((message, index) => (
+          <p key={`${message.id || index}-${index}`} className={`message ${message.type || "chat"}`}>
+            {message.playerName ? <strong>{message.playerName}: </strong> : null}
+            {message.text}
+          </p>
+        ))}
       </div>
-    </div>
+
+      <form className="chat-form" onSubmit={send}>
+        <input
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          placeholder={isDrawer ? "Send a hint in chat" : "Type your guess"}
+          disabled={disabled}
+          maxLength={80}
+        />
+        <button disabled={disabled || !text.trim()}>Send</button>
+      </form>
+    </section>
   );
 }

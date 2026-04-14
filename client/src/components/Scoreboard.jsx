@@ -1,26 +1,20 @@
-import { useState } from "react";
-import useSocket from "../hooks/useSocket";
-
-export default function Scoreboard() {
-  const [players, setPlayers] = useState([]);
-
-  useSocket("round_end", ({ scores }) => {
-    setPlayers(scores);
-  });
+export default function Scoreboard({ players = [], winner }) {
+  const ranked = [...players].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="p-3 border-b">
-      <h2 className="font-bold mb-2">Players</h2>
+    <section className="panel scoreboard">
+      <div className="panel-header">
+        <h2>Leaderboard</h2>
+        {winner ? <span>Winner: {winner.name}</span> : <span>Live</span>}
+      </div>
 
-      {players.map((p) => (
-        <div
-          key={p.id}
-          className="flex justify-between bg-gray-100 p-2 rounded mb-1"
-        >
-          <span>{p.name}</span>
-          <span>{p.score}</span>
+      {ranked.map((player, index) => (
+        <div key={player.id} className="score-row">
+          <span>{index + 1}</span>
+          <strong>{player.name}</strong>
+          <em>{player.score} pts</em>
         </div>
       ))}
-    </div>
+    </section>
   );
 }
