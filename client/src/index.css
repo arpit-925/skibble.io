@@ -671,6 +671,7 @@ label {
 .panel {
   min-width: 0;
   padding: 16px;
+  color: #17202a;
 }
 
 .panel-header,
@@ -706,11 +707,18 @@ label {
   border-radius: 8px;
   padding: 0.75rem;
   background: #f9fbfa;
+  color: #17202a;
 }
 
 .player-row.drawing {
   border-color: #0d766c;
   background: #e8f6f3;
+}
+
+.player-row strong,
+.score-row strong,
+.score-row span {
+  color: #17202a;
 }
 
 .player-row small {
@@ -820,7 +828,12 @@ label {
   padding: 0.65rem 0.75rem;
   border-radius: 8px;
   background: #f2f6f4;
+  color: #17202a;
   overflow-wrap: anywhere;
+}
+
+.message strong {
+  color: #17202a;
 }
 
 .message.system {
