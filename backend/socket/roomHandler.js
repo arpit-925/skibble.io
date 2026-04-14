@@ -1,7 +1,7 @@
 function registerRoomHandler({ socket, services }) {
-  socket.on("create_room", ({ name, settings } = {}, acknowledgement) => {
+  socket.on("create_room", ({ name, hostName, settings } = {}, acknowledgement) => {
     const room = services.createRoom({
-      hostName: name,
+      hostName: hostName || name,
       socketId: socket.id,
       settings,
       playerId: socket.id,
@@ -20,7 +20,7 @@ function registerRoomHandler({ socket, services }) {
     }
   });
 
-  socket.on("join_room", ({ roomId, name } = {}, acknowledgement) => {
+  socket.on("join_room", ({ roomId, name, playerName } = {}, acknowledgement) => {
     const room = services.getRoom(roomId);
     if (!room) {
       if (typeof acknowledgement === "function") {
@@ -32,7 +32,7 @@ function registerRoomHandler({ socket, services }) {
     const result = room.addPlayer({
       playerId: socket.id,
       socketId: socket.id,
-      name,
+      name: playerName || name,
     });
 
     if (!result.ok) {

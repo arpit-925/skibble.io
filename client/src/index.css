@@ -23,6 +23,7 @@ body {
     #2f66bf;
   background-size: 120px 120px, 140px 140px, auto, auto;
   color: #ffffff;
+  scroll-behavior: smooth;
 }
 
 button,
@@ -571,6 +572,37 @@ label {
   text-decoration: underline;
 }
 
+.footer-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0 20px 36px;
+}
+
+.footer-link-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(24, 59, 154, 0.48);
+  color: #ffffff;
+}
+
+.footer-link-card h2 {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-size: 1.35rem;
+}
+
+.footer-link-card p {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.footer-link-card a {
+  color: #fff6d5;
+}
+
 .lobby-content {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   align-items: start;
@@ -913,6 +945,10 @@ label {
 
   .game-page {
     padding: 16px;
+  }
+
+  .footer-link-grid {
+    grid-template-columns: 1fr;
   }
 }
 

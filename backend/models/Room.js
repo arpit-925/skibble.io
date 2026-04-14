@@ -87,6 +87,7 @@ class Room {
       players: this.serializePlayers(),
       leaderboard: buildLeaderboard(this.players),
       game: {
+        phase: this.game.status,
         status: this.game.status,
         round: this.game.round,
         totalRounds: this.settings.rounds,
@@ -94,6 +95,7 @@ class Room {
         drawerName: drawer?.name || null,
         timeLeft: this.game.timeLeft,
         hint: isDrawer ? this.game.selectedWord : this.game.getMaskedWord(),
+        hints: isDrawer ? this.game.selectedWord : this.game.getMaskedWord(),
         word: isDrawer ? this.game.selectedWord : undefined,
         maskedWord: isDrawer ? this.game.selectedWord : this.game.getMaskedWord(),
         wordOptions: isDrawer && this.game.status === "selecting" ? this.game.wordOptions : [],

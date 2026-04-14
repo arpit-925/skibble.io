@@ -52,7 +52,9 @@ function registerGameHandler({ socket, services }) {
 
     services.io.to(room.id).emit("word_chosen", {
       drawerId: room.game.drawerId,
+      word: room.game.selectedWord,
       maskedWord: room.game.getMaskedWord(),
+      hints: room.game.getMaskedWord(),
       timeLeft: room.game.timeLeft,
     });
     services.emitRoomState(room);

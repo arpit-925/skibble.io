@@ -140,6 +140,20 @@ class Game {
       scores: players.map((player) => player.serialize()),
     };
   }
+
+  getNextDrawerPreview(players) {
+    if (!players.length) return null;
+
+    let nextIndex = this.drawerIndex + 1;
+    let nextRound = this.round;
+    if (nextIndex >= players.length) {
+      nextIndex = 0;
+      nextRound += 1;
+    }
+
+    if (nextRound > this.settings.rounds) return null;
+    return players[nextIndex] || null;
+  }
 }
 
 module.exports = Game;

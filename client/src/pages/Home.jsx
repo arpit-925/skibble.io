@@ -241,7 +241,7 @@ export default function Home() {
             <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar color">
               {">"}
             </button>
-          <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar">
+            <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar">
               {">"}
             </button>
             <button type="button" className="dice-button" onClick={randomizeAvatar} aria-label="Random avatar">
@@ -327,7 +327,7 @@ export default function Home() {
               <div className="public-room-list">
                 {publicRooms.slice(0, 4).map((room) => (
                   <button key={room.id} type="button" className="public-room-chip" onClick={() => setRoomCode(room.id)}>
-                    {room.id} · {room.players}/{room.maxPlayers}
+                    {room.id} - {room.players}/{room.maxPlayers}
                   </button>
                 ))}
               </div>
@@ -336,7 +336,7 @@ export default function Home() {
         </section>
 
         <section className="classic-info-band">
-          <article className="info-column">
+          <article className="info-column" id="about">
             <p className="info-icon">?</p>
             <h2>About</h2>
             <p>skribbl.io is a free online multiplayer drawing and guessing game.</p>
@@ -344,7 +344,7 @@ export default function Home() {
             <p>The player with the most points at the end wins.</p>
           </article>
 
-          <article className="info-column">
+          <article className="info-column" id="news">
             <p className="info-icon">N</p>
             <h2>News</h2>
             <div className="news-card">
@@ -360,7 +360,7 @@ export default function Home() {
             </div>
           </article>
 
-          <article className="info-column">
+          <article className="info-column" id="how-to-play">
             <p className="info-icon">!</p>
             <h2>How to play</h2>
             <div className="howto-art" aria-hidden="true">
@@ -377,11 +377,38 @@ export default function Home() {
         </section>
 
         <footer className="classic-footer">
-          <a href="/">Contact</a>
-          <a href="/">Terms of Service</a>
-          <a href="/">Credits</a>
-          <a href="/">Privacy Settings</a>
+          <a href="#contact">Contact</a>
+          <a href="#terms">Terms of Service</a>
+          <a href="#credits">Credits</a>
+          <a href="#privacy">Privacy Settings</a>
         </footer>
+
+        <section className="footer-link-grid">
+          <article className="footer-link-card" id="contact">
+            <h2>Contact</h2>
+            <p>
+              Frontend: <a href="https://skibble-io.vercel.app/" target="_blank" rel="noreferrer">skibble-io.vercel.app</a>
+            </p>
+            <p>
+              Backend: <a href="https://skibble-io.onrender.com/" target="_blank" rel="noreferrer">skibble-io.onrender.com</a>
+            </p>
+          </article>
+
+          <article className="footer-link-card" id="terms">
+            <h2>Terms of Service</h2>
+            <p>Use respectful names, fair play, and no abusive chat or drawings in shared rooms.</p>
+          </article>
+
+          <article className="footer-link-card" id="credits">
+            <h2>Credits</h2>
+            <p>Built with React, Vite, Node.js, Express, and Socket.IO for live multiplayer drawing.</p>
+          </article>
+
+          <article className="footer-link-card" id="privacy">
+            <h2>Privacy Settings</h2>
+            <p>Private rooms stay invite-only by room code, while public rooms appear in the open room list.</p>
+          </article>
+        </section>
       </section>
     </main>
   );

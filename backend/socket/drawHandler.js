@@ -8,6 +8,8 @@ function registerDrawHandler({ socket, services }) {
 
     const stroke = {
       type: "draw_start",
+      x: point?.x,
+      y: point?.y,
       point,
       color,
       size,
@@ -29,6 +31,8 @@ function registerDrawHandler({ socket, services }) {
 
     const stroke = {
       type: "draw_move",
+      x: point?.x,
+      y: point?.y,
       point,
       color,
       size,

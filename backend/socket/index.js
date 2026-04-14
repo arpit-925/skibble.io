@@ -91,12 +91,16 @@ function initializeSocket(httpServer, options = {}) {
       }
 
       io.to(room.id).emit("canvas_clear");
-      io.to(room.id).emit("round_start", {
-        roomId: room.id,
-        round: room.game.round,
-        totalRounds: room.settings.rounds,
-        drawerId: room.game.drawerId,
-        drawerName: transition.drawer.name,
+      room.players.forEach((player) => {
+        io.to(player.socketId).emit("round_start", {
+          roomId: room.id,
+          round: room.game.round,
+          totalRounds: room.settings.rounds,
+          drawerId: room.game.drawerId,
+          drawerName: transition.drawer.name,
+          drawTime: room.settings.drawTime,
+          wordOptions: player.id === room.game.drawerId ? room.game.wordOptions : [],
+        });
       });
       this.emitRoomState(room);
     },
@@ -121,7 +125,16 @@ function initializeSocket(httpServer, options = {}) {
       room.game.clearTimer();
       room.game.status = "round_end";
 
-      io.to(room.id).emit("round_end", room.game.buildRoundSummary(reason, room.players));
+      const nextDrawer = room.game.getNextDrawerPreview(room.players);
+      io.to(room.id).emit("round_end", {
+        ...room.game.buildRoundSummary(reason, room.players),
+        nextDrawer: nextDrawer
+          ? {
+              id: nextDrawer.id,
+              name: nextDrawer.name,
+            }
+          : null,
+      });
       this.emitRoomState(room);
 
       setTimeout(() => {
