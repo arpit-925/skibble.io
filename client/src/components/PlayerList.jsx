@@ -16,7 +16,7 @@ export default function PlayerList({ players = [], drawerId }) {
               <small>
                 {player.isHost ? "Host" : "Player"}
                 {player.id === drawerId ? " drawing" : ""}
-                {player.hasGuessed ? " guessed" : ""}
+                {player.hasGuessedCorrectly ? " guessed" : ""}
               </small>
             </div>
             <span>{player.score}</span>

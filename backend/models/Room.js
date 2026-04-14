@@ -93,6 +93,7 @@ class Room {
         drawerId: this.game.drawerId,
         drawerName: drawer?.name || null,
         timeLeft: this.game.timeLeft,
+        hint: isDrawer ? this.game.selectedWord : this.game.getMaskedWord(),
         word: isDrawer ? this.game.selectedWord : undefined,
         maskedWord: isDrawer ? this.game.selectedWord : this.game.getMaskedWord(),
         wordOptions: isDrawer && this.game.status === "selecting" ? this.game.wordOptions : [],

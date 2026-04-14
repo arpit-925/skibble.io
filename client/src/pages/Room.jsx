@@ -14,7 +14,7 @@ export default function Room() {
   const players = room?.players || [];
   const isDrawer = game.drawerId === socket.id;
   const currentPlayer = players.find((player) => player.id === socket.id);
-  const canChat = game.status === "drawing" && !currentPlayer?.hasGuessed;
+  const canChat = game.status === "drawing" && !currentPlayer?.hasGuessedCorrectly;
   const winner = game.status === "game_over" ? [...players].sort((a, b) => b.score - a.score)[0] : null;
 
   useSocket("game_state", (state) => {

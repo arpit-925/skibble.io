@@ -164,6 +164,7 @@ label {
   display: grid;
   justify-items: center;
   gap: 10px;
+  padding-inline: 12px;
 }
 
 .classic-logo {
@@ -180,6 +181,7 @@ label {
     3px 0 #101010,
     0 -3px #101010,
     2px 4px rgba(9, 17, 41, 0.35);
+  animation: logo-bob 2.8s ease-in-out infinite;
 }
 
 .classic-logo span {
@@ -194,6 +196,8 @@ label {
 
 .mascot-row {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   padding: 10px 14px;
   border-radius: 6px;
@@ -209,6 +213,7 @@ label {
   box-shadow: inset 0 -8px rgba(255, 255, 255, 0.08);
   position: relative;
   transform: translateY(0);
+  animation: mascot-bounce 1.6s ease-in-out infinite;
 }
 
 .mascot::before,
@@ -232,6 +237,34 @@ label {
 
 .mascot.active {
   transform: translateY(-2px);
+}
+
+.mascot:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.mascot:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.mascot:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.mascot:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.mascot:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.mascot:nth-child(7) {
+  animation-delay: 0.6s;
+}
+
+.mascot:nth-child(8) {
+  animation-delay: 0.7s;
 }
 
 .start-card {
@@ -574,6 +607,7 @@ label {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 16px;
+  padding: 20px;
 }
 
 .game-topbar {
@@ -743,13 +777,13 @@ label {
   border-radius: 8px;
   background: #ffffff;
   min-height: 360px;
+  aspect-ratio: 16 / 9;
 }
 
 .drawing-canvas {
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 360px;
   touch-action: none;
   cursor: crosshair;
 }
@@ -815,6 +849,26 @@ label {
   line-height: 1.6;
 }
 
+@keyframes logo-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes mascot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 @media (max-width: 1100px) {
   .lobby-content,
   .game-layout {
@@ -843,6 +897,10 @@ label {
   .classic-info-band {
     grid-template-columns: 1fr;
   }
+
+  .game-page {
+    padding: 16px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -870,6 +928,11 @@ label {
     padding-top: 18px;
   }
 
+  .classic-logo {
+    font-size: clamp(2.8rem, 16vw, 4.2rem);
+    text-align: center;
+  }
+
   .start-card {
     width: calc(100% - 20px);
     margin-bottom: 28px;
@@ -888,12 +951,37 @@ label {
   .avatar-picker {
     grid-template-columns: 32px 32px minmax(0, 1fr) 32px 32px;
     gap: 6px;
+    min-height: 132px;
   }
 
   .dice-button {
     grid-column: 5;
     grid-row: 2;
     justify-self: end;
+  }
+
+  .avatar-face {
+    width: 88px;
+    height: 88px;
+  }
+
+  .game-page {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .panel,
+  .word-picker {
+    padding: 12px;
+  }
+
+  .canvas-board,
+  .drawing-canvas {
+    min-height: 0;
+  }
+
+  .chat-panel {
+    min-height: 340px;
   }
 
   .classic-info-band {
