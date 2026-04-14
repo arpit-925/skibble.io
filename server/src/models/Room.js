@@ -6,8 +6,10 @@ const DEFAULT_SETTINGS = {
   rounds: 3,
   drawTime: 80,
   hints: 3,
+  wordChoices: 3,
   isPrivate: false,
   category: "general",
+  wordMode: "normal",
 };
 
 function clamp(value, min, max, fallback) {
@@ -30,11 +32,15 @@ class Room {
   normalizeSettings(settings) {
     return {
       maxPlayers: clamp(settings.maxPlayers, 2, 20, DEFAULT_SETTINGS.maxPlayers),
-      rounds: clamp(settings.rounds, 2, 10, DEFAULT_SETTINGS.rounds),
+      rounds: clamp(settings.rounds, 2, 20, DEFAULT_SETTINGS.rounds),
       drawTime: clamp(settings.drawTime, 15, 240, DEFAULT_SETTINGS.drawTime),
       hints: clamp(settings.hints, 0, 5, DEFAULT_SETTINGS.hints),
+      wordChoices: clamp(settings.wordChoices, 1, 5, DEFAULT_SETTINGS.wordChoices),
       isPrivate: Boolean(settings.isPrivate),
       category: settings.category || DEFAULT_SETTINGS.category,
+      wordMode: ["normal", "hidden", "combination"].includes(String(settings.wordMode || "").toLowerCase())
+        ? String(settings.wordMode).toLowerCase()
+        : DEFAULT_SETTINGS.wordMode,
     };
   }
 

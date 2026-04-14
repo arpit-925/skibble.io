@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import socket from "../socket/socket";
+import socket, { backendUrl } from "../socket/socket";
 import useGame from "../context/useGame";
 
 const avatarColors = ["#d63a30", "#f27a23", "#f0d54f", "#68d442", "#4fd4f6", "#5467f5", "#8a4cf6", "#f08ec7"];
 const languages = ["English", "Hindi", "Spanish", "German"];
+const wordModes = ["normal", "hidden", "combination"];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,17 +15,68 @@ export default function Home() {
   const [error, setError] = useState("");
   const [language, setLanguage] = useState(languages[0]);
   const [avatarIndex, setAvatarIndex] = useState(0);
-  const settings = {
+  const [showSettings, setShowSettings] = useState(false);
+  const [categories, setCategories] = useState(["general", "animals", "food"]);
+  const [publicRooms, setPublicRooms] = useState([]);
+  const [settings, setSettings] = useState({
     maxPlayers: 8,
     rounds: 3,
     drawTime: 80,
     hints: 3,
-    isPrivate: false,
+    wordChoices: 3,
     category: "general",
+    wordMode: "normal",
+  });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadHomeData() {
+      try {
+        const [categoriesResponse, roomsResponse] = await Promise.all([
+          fetch(`${backendUrl}/words/categories`),
+          fetch(`${backendUrl}/rooms/public`),
+        ]);
+
+        if (!ignore && categoriesResponse.ok) {
+          const nextCategories = await categoriesResponse.json();
+          if (Array.isArray(nextCategories) && nextCategories.length > 0) {
+            setCategories(nextCategories);
+            setSettings((current) => ({
+              ...current,
+              category: nextCategories.includes(current.category) ? current.category : nextCategories[0],
+            }));
+          }
+        }
+
+        if (!ignore && roomsResponse.ok) {
+          const nextRooms = await roomsResponse.json();
+          if (Array.isArray(nextRooms)) setPublicRooms(nextRooms);
+        }
+      } catch (_error) {
+        if (!ignore) setPublicRooms([]);
+      }
+    }
+
+    loadHomeData();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const updateSetting = (key, value) => {
+    setSettings((current) => ({ ...current, [key]: value }));
   };
 
   const shiftAvatar = (direction) => {
     setAvatarIndex((current) => (current + direction + avatarColors.length) % avatarColors.length);
+  };
+
+  const randomizeAvatar = () => {
+    setAvatarIndex((current) => {
+      const next = Math.floor(Math.random() * avatarColors.length);
+      return next === current ? (next + 1) % avatarColors.length : next;
+    });
   };
 
   const persistName = () => {
@@ -37,7 +89,7 @@ export default function Home() {
     const cleanName = persistName();
     setError("");
     setMessages([]);
-    socket.emit("create_room", { name: cleanName, settings: { ...settings, isPrivate } }, (response) => {
+    socket.emit("create_room", { name: cleanName, settings: { ...settings, isPrivate, language } }, (response) => {
       if (!response?.ok) {
         setError(response?.error || "Could not create room.");
         return;
@@ -126,10 +178,10 @@ export default function Home() {
             <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar color">
               {">"}
             </button>
-            <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar">
+          <button type="button" className="avatar-arrow" onClick={() => shiftAvatar(1)} aria-label="Next avatar">
               {">"}
             </button>
-            <button type="button" className="dice-button" onClick={() => shiftAvatar(Math.floor(Math.random() * avatarColors.length) || 1)} aria-label="Random avatar">
+            <button type="button" className="dice-button" onClick={randomizeAvatar} aria-label="Random avatar">
               ?
             </button>
           </div>
@@ -140,6 +192,55 @@ export default function Home() {
           <button className="private-action" onClick={() => createRoom(true)}>
             Create Private Room
           </button>
+
+          <button type="button" className="settings-toggle" onClick={() => setShowSettings((current) => !current)}>
+            {showSettings ? "Hide room settings" : "Room settings"}
+          </button>
+
+          {showSettings && (
+            <div className="room-settings-grid">
+              <label>
+                Max players
+                <input type="number" min="2" max="20" value={settings.maxPlayers} onChange={(event) => updateSetting("maxPlayers", Number(event.target.value))} />
+              </label>
+              <label>
+                Rounds
+                <input type="number" min="2" max="20" value={settings.rounds} onChange={(event) => updateSetting("rounds", Number(event.target.value))} />
+              </label>
+              <label>
+                Draw time
+                <input type="number" min="15" max="240" value={settings.drawTime} onChange={(event) => updateSetting("drawTime", Number(event.target.value))} />
+              </label>
+              <label>
+                Hints
+                <input type="number" min="0" max="5" value={settings.hints} onChange={(event) => updateSetting("hints", Number(event.target.value))} />
+              </label>
+              <label>
+                Word choices
+                <input type="number" min="1" max="5" value={settings.wordChoices} onChange={(event) => updateSetting("wordChoices", Number(event.target.value))} />
+              </label>
+              <label>
+                Category
+                <select value={settings.category} onChange={(event) => updateSetting("category", event.target.value)}>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="room-settings-wide">
+                Word mode
+                <select value={settings.wordMode} onChange={(event) => updateSetting("wordMode", event.target.value)}>
+                  {wordModes.map((mode) => (
+                    <option key={mode} value={mode}>
+                      {mode}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
 
           <div className="join-row">
             <input
@@ -155,6 +256,19 @@ export default function Home() {
           </div>
 
           {error && <p className="form-error">{error}</p>}
+
+          {publicRooms.length > 0 && (
+            <div className="public-room-strip">
+              <p>Open rooms</p>
+              <div className="public-room-list">
+                {publicRooms.slice(0, 4).map((room) => (
+                  <button key={room.id} type="button" className="public-room-chip" onClick={() => setRoomCode(room.id)}>
+                    {room.id} · {room.players}/{room.maxPlayers}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="classic-info-band">

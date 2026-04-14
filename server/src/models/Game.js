@@ -16,14 +16,14 @@ class Game {
     this.hintIndexes = [];
   }
 
-  start() {
+  async start() {
     this.round = 1;
     this.turnIndex = -1;
     this.status = "selecting";
     return this.nextTurn();
   }
 
-  nextTurn() {
+  async nextTurn() {
     this.clearTimer();
     const players = this.room.players;
     if (players.length < 2) {
@@ -49,7 +49,7 @@ class Game {
     this.timeLeft = this.room.settings.drawTime;
     this.correctGuessOrder = [];
     this.hintIndexes = [];
-    this.wordOptions = getRandomWords(3, this.room.settings.category);
+    this.wordOptions = await getRandomWords(this.room.settings.wordChoices, this.room.settings.category);
     this.room.players.forEach((player) => player.resetForRound());
 
     return {
@@ -169,6 +169,8 @@ class Game {
 
   getMaskedWord() {
     if (!this.word) return "";
+    if (this.room.settings.wordMode === "hidden") return "";
+    if (this.room.settings.wordMode === "combination") return `${this.word.replace(/\s/g, "").length} letters`;
     return this.word
       .split("")
       .map((char) => (char === " " ? " " : "_"))

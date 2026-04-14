@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Score = require("../models/Score");
+const { seedWordsIfNeeded } = require("../utils/wordList");
 
 function getDatabaseStatus() {
   const states = ["disconnected", "connected", "connecting", "disconnecting"];
@@ -19,6 +20,8 @@ async function connectDB() {
       serverSelectionTimeoutMS: 10000,
     });
     console.log(`MongoDB connected: ${connection.connection.host}`);
+    const seeded = await seedWordsIfNeeded();
+    console.log(`Word catalog ready (${seeded} records available).`);
     return connection;
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
@@ -41,8 +44,18 @@ async function saveGameScores(roomId, players) {
   );
 }
 
+async function getTopScores(limit = 10) {
+  if (mongoose.connection.readyState !== 1) return [];
+
+  return Score.find({})
+    .sort({ score: -1, createdAt: -1 })
+    .limit(limit)
+    .lean();
+}
+
 module.exports = {
   connectDB,
   getDatabaseStatus,
+  getTopScores,
   saveGameScores,
 };

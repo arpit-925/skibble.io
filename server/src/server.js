@@ -4,9 +4,10 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const initSocket = require("./config/socket");
-const { connectDB, getDatabaseStatus } = require("./config/db");
+const { connectDB, getDatabaseStatus, getTopScores } = require("./config/db");
 const registerSocketHandlers = require("./socket/socketHandler");
 const rooms = require("./store/rooms");
+const { listWordCategories } = require("./utils/wordList");
 
 const app = express();
 const server = http.createServer(app);
@@ -40,6 +41,15 @@ app.get("/rooms/public", (_req, res) => {
     }));
 
   res.json(publicRooms);
+});
+
+app.get("/leaderboard", async (_req, res) => {
+  const scores = await getTopScores(10);
+  res.json(scores);
+});
+
+app.get("/words/categories", (_req, res) => {
+  res.json(listWordCategories());
 });
 
 const PORT = process.env.PORT || 5000;

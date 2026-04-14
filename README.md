@@ -4,11 +4,12 @@ A production-ready real-time drawing and guessing game built with React, Vite, N
 
 ## Features
 
-- Create public or private rooms with max players, rounds, draw time, hints, and word category settings.
+- Create public or private rooms with max players, rounds, draw time, hints, word choices, word mode, and word category settings.
 - Join rooms by code and wait in a lobby until the host starts.
 - Turn-based game flow with drawer rotation, word selection, countdown timer, hints, round results, final leaderboard, and winner.
 - Real-time canvas sync with `draw_start`, `draw_move`, `draw_end`, `draw_data`, `canvas_clear`, and `draw_undo`.
 - Chat and guessing via Socket.IO with case-insensitive validation and speed-based scoring.
+- MongoDB-backed word catalog with automatic seeding from the default categories plus persisted completed-game scores.
 - Responsive React UI with Home, Lobby, and Room/Game pages.
 
 ## Project Structure
@@ -54,6 +55,8 @@ Game: `game_state`, `round_start`, `word_chosen`, `round_end`, `game_over`
 Drawing: `draw_start`, `draw_move`, `draw_end`, `draw_data`, `canvas_clear`, `draw_undo`
 
 Chat: `guess`, `guess_result`, `chat`, `chat_message`
+
+REST: `GET /health`, `GET /rooms/public`, `GET /words/categories`, `GET /leaderboard`
 
 ## Local Setup
 
@@ -108,5 +111,6 @@ npm start
 
 - Room and live game state are kept in memory for low-latency Socket.IO gameplay.
 - `server/src/config/db.js` connects with `process.env.MONGO_URI` and stores completed game scores in the `scores` collection.
+- On first successful MongoDB connection, the backend seeds the `words` collection with the built-in default categories if it is empty.
 - If you use MongoDB Atlas, add your backend host's outbound IP address to the Atlas Network Access allowlist.
 - The frontend can be deployed to Vercel, Netlify, or any static host. The backend must run on a host that supports persistent WebSocket connections, such as Render, Fly.io, Railway, or a VPS.

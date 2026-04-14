@@ -16,14 +16,17 @@ function emitRoomState(io, room) {
   });
 }
 
-function endRound(io, room, reason) {
+async function endRound(io, room, reason) {
   const result = room.game.finishRound(reason);
   room.broadcast("round_end", result);
   emitRoomState(io, room);
 
   setTimeout(() => {
-    const next = room.game.nextTurn();
-    handleRoundTransition(io, room, next);
+    room.game.nextTurn()
+      .then((next) => handleRoundTransition(io, room, next))
+      .catch((error) => {
+        console.error("Failed to move to the next turn:", error.message);
+      });
   }, 3500);
 }
 
@@ -31,11 +34,15 @@ function startDrawingTimer(io, room) {
   room.game.startTimer(
     () => emitRoomState(io, room),
     () => emitRoomState(io, room),
-    (reason) => endRound(io, room, reason),
+    (reason) => {
+      endRound(io, room, reason).catch((error) => {
+        console.error("Failed to end timed round:", error.message);
+      });
+    },
   );
 }
 
-function handleRoundTransition(io, room, transition) {
+async function handleRoundTransition(io, room, transition) {
   if (!transition) return;
 
   if (transition.type === "game_over") {
@@ -115,11 +122,11 @@ function registerSocketHandlers(io) {
       if (typeof ack === "function") ack({ ok: true, roomId: code, room: room.serializeFor(socket.id) });
     });
 
-    socket.on("start_game", ({ roomId } = {}) => {
+    socket.on("start_game", async ({ roomId } = {}) => {
       const room = rooms.get(String(roomId || "").toUpperCase());
       if (!room || !room.isHost(socket.id) || room.players.length < 2) return;
-      const transition = room.game.start();
-      handleRoundTransition(io, room, transition);
+      const transition = await room.game.start();
+      await handleRoundTransition(io, room, transition);
     });
 
     socket.on("word_chosen", ({ roomId, word } = {}) => {
@@ -170,7 +177,9 @@ function registerSocketHandlers(io) {
       emitRoomState(io, room);
 
       if (result.allGuessersCorrect) {
-        endRound(io, room, "all_guessed");
+        endRound(io, room, "all_guessed").catch((error) => {
+          console.error("Failed to end round after all guesses:", error.message);
+        });
       }
     });
 
@@ -238,7 +247,9 @@ function registerSocketHandlers(io) {
         }
 
         if (wasActiveDrawer) {
-          endRound(io, room, "drawer_left");
+          endRound(io, room, "drawer_left").catch((error) => {
+            console.error("Failed to end round after drawer disconnect:", error.message);
+          });
           return;
         }
 

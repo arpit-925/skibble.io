@@ -1,4 +1,7 @@
-const wordsByCategory = {
+const mongoose = require("mongoose");
+const Word = require("../models/Word");
+
+const defaultWordsByCategory = {
   general: [
     "apple",
     "astronaut",
@@ -63,12 +66,93 @@ const wordsByCategory = {
   ],
 };
 
-function getRandomWords(count = 3, category = "general") {
-  const pool = wordsByCategory[category] || wordsByCategory.general;
-  return [...pool].sort(() => Math.random() - 0.5).slice(0, count);
+const defaultWordDocuments = Object.entries(defaultWordsByCategory).flatMap(([category, words]) =>
+  words.map((text) => ({
+    text,
+    category,
+    difficulty: "normal",
+  })),
+);
+
+let cachedWordsByCategory = { ...defaultWordsByCategory };
+
+function shuffle(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+function dedupeWords(words) {
+  return [...new Set(words.map((word) => String(word || "").trim().toLowerCase()).filter(Boolean))];
+}
+
+function normalizeWordMap(words) {
+  const grouped = words.reduce((accumulator, word) => {
+    const category = String(word.category || "general").trim().toLowerCase() || "general";
+    if (!accumulator[category]) accumulator[category] = [];
+    accumulator[category].push(String(word.text || "").trim());
+    return accumulator;
+  }, {});
+
+  return Object.fromEntries(
+    Object.entries(grouped).map(([category, list]) => [category, dedupeWords(list)]),
+  );
+}
+
+function getFallbackWords(count = 3, category = "general") {
+  const normalizedCategory = String(category || "general").trim().toLowerCase();
+  const pool = cachedWordsByCategory[normalizedCategory] || cachedWordsByCategory.general || [];
+  return shuffle(pool).slice(0, count);
+}
+
+async function seedWordsIfNeeded() {
+  if (mongoose.connection.readyState !== 1) return 0;
+
+  const existingCount = await Word.estimatedDocumentCount();
+  if (existingCount > 0) {
+    await refreshWordCache();
+    return existingCount;
+  }
+
+  await Word.insertMany(defaultWordDocuments, { ordered: false });
+  await refreshWordCache();
+  return defaultWordDocuments.length;
+}
+
+async function refreshWordCache() {
+  if (mongoose.connection.readyState !== 1) {
+    cachedWordsByCategory = { ...defaultWordsByCategory };
+    return cachedWordsByCategory;
+  }
+
+  const words = await Word.find({}, { text: 1, category: 1, _id: 0 }).lean();
+  const normalized = normalizeWordMap(words);
+  cachedWordsByCategory = Object.keys(normalized).length > 0 ? normalized : { ...defaultWordsByCategory };
+  return cachedWordsByCategory;
+}
+
+async function getRandomWords(count = 3, category = "general") {
+  if (mongoose.connection.readyState !== 1) {
+    return getFallbackWords(count, category);
+  }
+
+  const normalizedCategory = String(category || "general").trim().toLowerCase();
+  const words = cachedWordsByCategory[normalizedCategory] || cachedWordsByCategory.general;
+
+  if (words?.length) {
+    return shuffle(words).slice(0, count);
+  }
+
+  await refreshWordCache();
+  return getFallbackWords(count, normalizedCategory);
+}
+
+function listWordCategories() {
+  return Object.keys(cachedWordsByCategory).sort();
 }
 
 module.exports = {
-  wordsByCategory,
+  defaultWordsByCategory,
   getRandomWords,
+  listWordCategories,
+  refreshWordCache,
+  seedWordsIfNeeded,
 };
