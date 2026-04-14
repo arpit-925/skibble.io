@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import socket, { backendUrl } from "../socket/socket";
 import useGame from "../context/useGame";
 
@@ -377,38 +377,11 @@ export default function Home() {
         </section>
 
         <footer className="classic-footer">
-          <a href="#contact">Contact</a>
-          <a href="#terms">Terms of Service</a>
-          <a href="#credits">Credits</a>
-          <a href="#privacy">Privacy Settings</a>
+          <Link to="/contact">Contact</Link>
+          <Link to="/terms">Terms of Service</Link>
+          <Link to="/credits">Credits</Link>
+          <Link to="/privacy">Privacy Settings</Link>
         </footer>
-
-        <section className="footer-link-grid">
-          <article className="footer-link-card" id="contact">
-            <h2>Contact</h2>
-            <p>
-              Frontend: <a href="https://skibble-io.vercel.app/" target="_blank" rel="noreferrer">skibble-io.vercel.app</a>
-            </p>
-            <p>
-              Backend: <a href="https://skibble-io.onrender.com/" target="_blank" rel="noreferrer">skibble-io.onrender.com</a>
-            </p>
-          </article>
-
-          <article className="footer-link-card" id="terms">
-            <h2>Terms of Service</h2>
-            <p>Use respectful names, fair play, and no abusive chat or drawings in shared rooms.</p>
-          </article>
-
-          <article className="footer-link-card" id="credits">
-            <h2>Credits</h2>
-            <p>Built with React, Vite, Node.js, Express, and Socket.IO for live multiplayer drawing.</p>
-          </article>
-
-          <article className="footer-link-card" id="privacy">
-            <h2>Privacy Settings</h2>
-            <p>Private rooms stay invite-only by room code, while public rooms appear in the open room list.</p>
-          </article>
-        </section>
       </section>
     </main>
   );

@@ -1,8 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { GameProvider } from "./context/GameContext";
+import ContactPage from "./pages/ContactPage";
+import CreditsPage from "./pages/CreditsPage";
 import Home from "./pages/Home";
 import Lobby from "./pages/Lobby";
+import PrivacyPage from "./pages/PrivacyPage";
 import Room from "./pages/Room";
+import TermsPage from "./pages/TermsPage";
 
 export default function App() {
   return (
@@ -10,6 +14,10 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/credits" element={<CreditsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/lobby/:roomId" element={<Lobby />} />
           <Route path="/room/:roomId" element={<Room />} />
         </Routes>
