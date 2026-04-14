@@ -71,6 +71,10 @@ app.get("/rooms/public", (_req, res) => {
   res.json(publicRooms);
 });
 
+app.get("/words/categories", (_req, res) => {
+  res.json(listCategories());
+});
+
 // ✅ Socket init
 initializeSocket(server, { clientUrl: CLIENT_URL });
 

@@ -50,6 +50,9 @@ server/.env
 .DS_Store
 Thumbs.db
 
+.history
+*.local 
+
 # ------------------------------
 
 # IDE / Editor files

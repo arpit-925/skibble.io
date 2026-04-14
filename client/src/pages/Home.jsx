@@ -18,6 +18,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [categories, setCategories] = useState(["general", "animals", "food"]);
   const [publicRooms, setPublicRooms] = useState([]);
+  const [isConnecting, setIsConnecting] = useState(!socket.connected);
   const [settings, setSettings] = useState({
     maxPlayers: 8,
     rounds: 3,
@@ -64,6 +65,36 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleConnect = () => {
+      setIsConnecting(false);
+      setError("");
+    };
+
+    const handleDisconnect = () => {
+      setIsConnecting(true);
+    };
+
+    const handleConnectError = () => {
+      setIsConnecting(true);
+      setError(`Could not connect to the game server at ${backendUrl}.`);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+
+    if (socket.connected) {
+      handleConnect();
+    }
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
+    };
+  }, []);
+
   const updateSetting = (key, value) => {
     setSettings((current) => ({ ...current, [key]: value }));
   };
@@ -86,10 +117,26 @@ export default function Home() {
   };
 
   const createRoom = (isPrivate) => {
+    if (!socket.connected) {
+      setError(`Server connection is offline. Check ${backendUrl}.`);
+      return;
+    }
+
     const cleanName = persistName();
     setError("");
     setMessages([]);
+    let resolved = false;
+    const timeoutId = window.setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      setError("Server did not respond while creating the room.");
+    }, 8000);
+
     socket.emit("create_room", { name: cleanName, settings: { ...settings, isPrivate, language } }, (response) => {
+      if (resolved) return;
+      resolved = true;
+      window.clearTimeout(timeoutId);
+
       if (!response?.ok) {
         setError(response?.error || "Could not create room.");
         return;
@@ -100,6 +147,11 @@ export default function Home() {
   };
 
   const joinRoom = () => {
+    if (!socket.connected) {
+      setError(`Server connection is offline. Check ${backendUrl}.`);
+      return;
+    }
+
     const cleanName = persistName();
     const cleanCode = roomCode.trim().toUpperCase();
     if (!cleanCode) {
@@ -109,7 +161,18 @@ export default function Home() {
 
     setError("");
     setMessages([]);
+    let resolved = false;
+    const timeoutId = window.setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      setError("Server did not respond while joining the room.");
+    }, 8000);
+
     socket.emit("join_room", { roomId: cleanCode, name: cleanName }, (response) => {
+      if (resolved) return;
+      resolved = true;
+      window.clearTimeout(timeoutId);
+
       if (!response?.ok) {
         setError(response?.error || "Could not join room.");
         return;
@@ -256,6 +319,7 @@ export default function Home() {
           </div>
 
           {error && <p className="form-error">{error}</p>}
+          {!error && isConnecting && <p className="form-error">Connecting to server...</p>}
 
           {publicRooms.length > 0 && (
             <div className="public-room-strip">

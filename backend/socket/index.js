@@ -14,7 +14,14 @@ const {
 const rooms = new Map();
 
 function initializeSocket(httpServer, options = {}) {
-  const allowedOrigins = [options.clientUrl, "https://skibble-io.vercel.app"].filter(Boolean);
+  const allowedOrigins = [
+    options.clientUrl,
+    "https://skibble-io.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+  ].filter(Boolean);
   const io = new Server(httpServer, {
     cors: {
       origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
