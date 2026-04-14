@@ -1,15 +1,18 @@
+const { sanitizeName } = require("../utils/helpers");
+
 class Player {
-  constructor({ id, name, isHost = false }) {
+  constructor({ id, socketId, name, isHost = false }) {
     this.id = id;
-    this.name = String(name || "Player").trim().slice(0, 24) || "Player";
-    this.score = 0;
+    this.socketId = socketId;
+    this.name = sanitizeName(name);
     this.isHost = isHost;
-    this.hasGuessed = false;
+    this.score = 0;
+    this.hasGuessedCorrectly = false;
     this.connected = true;
   }
 
   resetForRound() {
-    this.hasGuessed = false;
+    this.hasGuessedCorrectly = false;
   }
 
   addScore(points) {
@@ -22,7 +25,7 @@ class Player {
       name: this.name,
       score: this.score,
       isHost: this.isHost,
-      hasGuessed: this.hasGuessed,
+      hasGuessedCorrectly: this.hasGuessedCorrectly,
       connected: this.connected,
     };
   }
