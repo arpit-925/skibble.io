@@ -1,8 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { GameProvider } from "./context/GameContext";
-
-import Layout from "./components/Layout";
-
 import ContactPage from "./pages/Contact";
 import CreditsPage from "./pages/Credits";
 import Home from "./pages/Home";
@@ -16,16 +13,13 @@ export default function App() {
     <GameProvider>
       <BrowserRouter>
         <Routes>
-          {/* Layout Wrapper */}
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/credits" element={<CreditsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/lobby/:roomId" element={<Lobby />} />
-            <Route path="/room/:roomId" element={<Room />} />
-          </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/credits" element={<CreditsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/lobby/:roomId" element={<Lobby />} />
+          <Route path="/room/:roomId" element={<Room />} />
         </Routes>
       </BrowserRouter>
     </GameProvider>
