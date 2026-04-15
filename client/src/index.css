@@ -700,6 +700,11 @@ label {
   min-width: 0;
 }
 
+.sidebar-right {
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
 .panel {
   min-width: 0;
   padding: 16px;
@@ -843,7 +848,10 @@ label {
 .chat-panel {
   display: grid;
   grid-template-rows: auto minmax(240px, 1fr) auto;
+  height: 100%;
   min-height: 420px;
+  max-height: calc(100vh - 220px);
+  overflow: hidden;
 }
 
 .message-list {
@@ -853,6 +861,7 @@ label {
   gap: 8px;
   min-height: 0;
   padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .message {
@@ -1031,6 +1040,7 @@ label {
 
   .chat-panel {
     min-height: 340px;
+    max-height: 60vh;
   }
 
   .classic-info-band {
