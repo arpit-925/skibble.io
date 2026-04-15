@@ -35,7 +35,7 @@ function normalizeRoomSettings(settings = {}) {
     rounds: clampNumber(settings.rounds, 1, 20, DEFAULT_SETTINGS.rounds),
     drawTime: clampNumber(settings.drawTime, 15, 240, DEFAULT_SETTINGS.drawTime),
     hints: clampNumber(settings.hints, 0, 5, DEFAULT_SETTINGS.hints),
-    wordChoices: clampNumber(settings.wordChoices, 3, 3, DEFAULT_SETTINGS.wordChoices),
+    wordChoices: clampNumber(settings.wordChoices, 1, 5, DEFAULT_SETTINGS.wordChoices),
     isPrivate: Boolean(settings.isPrivate),
     category: String(settings.category || DEFAULT_SETTINGS.category).trim().toLowerCase() || DEFAULT_SETTINGS.category,
   };

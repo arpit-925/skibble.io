@@ -54,7 +54,7 @@ export default function Home() {
           const nextRooms = await roomsResponse.json();
           if (Array.isArray(nextRooms)) setPublicRooms(nextRooms);
         }
-      } catch (_error) {
+      } catch {
         if (!ignore) setPublicRooms([]);
       }
     }

@@ -18,7 +18,7 @@ function registerDrawHandler({ socket, services }) {
       timestamp: Date.now(),
     };
 
-    room.game.addStroke(stroke);
+    room.game.startStroke(stroke);
     services.io.to(room.id).emit("draw_start", stroke);
     services.io.to(room.id).emit("draw_data", stroke);
   });
@@ -42,7 +42,7 @@ function registerDrawHandler({ socket, services }) {
       timestamp: Date.now(),
     };
 
-    room.game.addStroke(stroke);
+    room.game.appendStrokePoint(socket.id, point);
     services.io.to(room.id).emit("draw_move", stroke);
     services.io.to(room.id).emit("draw_data", stroke);
   });
@@ -54,6 +54,7 @@ function registerDrawHandler({ socket, services }) {
 
     if (!services.canDraw(room, player)) return;
 
+    room.game.finishStroke(socket.id);
     services.io.to(room.id).emit("draw_end", {
       socketId: socket.id,
       timestamp: Date.now(),

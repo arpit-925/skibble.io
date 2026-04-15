@@ -1,116 +1,160 @@
 # Skribbl.io Clone
 
-A production-ready real-time drawing and guessing game built with React, Vite, Node.js, Express, Socket.IO, HTML5 Canvas, and MongoDB score persistence.
+Real-time multiplayer drawing and guessing game built with React, Vite, Express, and Socket.IO.
 
-## Features
+## What It Does
 
-- Create public or private rooms with max players, rounds, draw time, hints, word choices, word mode, and word category settings.
-- Join rooms by code and wait in a lobby until the host starts.
-- Turn-based game flow with drawer rotation, word selection, countdown timer, hints, round results, final leaderboard, and winner.
-- Real-time canvas sync with `draw_start`, `draw_move`, `draw_end`, `draw_data`, `canvas_clear`, and `draw_undo`.
-- Chat and guessing via Socket.IO with case-insensitive validation and speed-based scoring.
-- MongoDB-backed word catalog with automatic seeding from the default categories plus persisted completed-game scores.
-- Responsive React UI with Home, Lobby, and Room/Game pages.
+- Creates public or private rooms with shareable room codes
+- Lets the host configure rounds, draw time, hints, max players, category, and number of word choices
+- Rotates the drawer each turn and gives the drawer a fresh word selection
+- Syncs drawing events live across the room
+- Handles chat, guesses, scoring, round results, and final winner state
+- Exposes simple REST endpoints for health checks, categories, and public-room discovery
 
-## Project Structure
+## Tech Stack
+
+- Frontend: React 19, Vite, React Router, Socket.IO client
+- Backend: Node.js, Express 5, Socket.IO
+- Styling: CSS with Tailwind tooling available in the repo
+
+## Repo Layout
 
 ```text
+backend/
+  models/
+  socket/
+  utils/
+  server.js
+
 client/
   src/
-    components/Canvas.jsx
-    components/Toolbar.jsx
-    components/Chat.jsx
-    components/PlayerList.jsx
-    components/Scoreboard.jsx
-    pages/Home.jsx
-    pages/Lobby.jsx
-    pages/Room.jsx
-    pages/Game.jsx
-    hooks/useSocket.js
-    hooks/useCanvas.js
-    context/GameContext.jsx
-    context/GameContextValue.js
-    context/useGame.js
-    utils/drawingHelpers.js
-server/
-  src/
-    server.js
-    index.js
-    socket/socketHandler.js
-    models/Room.js
-    models/Player.js
-    models/Game.js
-    controllers/roomController.js
-    utils/wordList.js
-    utils/scoring.js
-    config/db.js
+    components/
+    context/
+    hooks/
+    pages/
+    socket/
+    utils/
+  public/
 ```
 
-## WebSocket Events
+## Prerequisites
 
-Room: `create_room`, `join_room`, `player_joined`, `player_left`, `start_game`
+- Node.js 18+
+- npm
 
-Game: `game_state`, `round_start`, `word_chosen`, `round_end`, `game_over`
+## Install
 
-Drawing: `draw_start`, `draw_move`, `draw_end`, `draw_data`, `canvas_clear`, `draw_undo`
-
-Chat: `guess`, `guess_result`, `chat`, `chat_message`
-
-REST: `GET /health`, `GET /rooms/public`, `GET /words/categories`, `GET /leaderboard`
-
-## Local Setup
-
-Install dependencies:
+Install dependencies for each app:
 
 ```bash
-cd server
+cd backend
 npm install
 
 cd ../client
 npm install
 ```
 
-Run the backend:
+## Run Locally
+
+Start the backend:
 
 ```bash
-cd server
+cd backend
 npm run dev
 ```
 
-Run the frontend:
+Start the frontend in a second terminal:
 
 ```bash
 cd client
 npm run dev
 ```
 
-By default the frontend connects to `http://localhost:5000`. For deployment, set:
+Open the frontend URL shown by Vite, usually `http://localhost:5173`.
 
-```bash
-VITE_BACKEND_URL=https://your-backend-url.example
-CLIENT_URL=https://your-frontend-url.example
-MONGO_URI=mongodb+srv://user:password@cluster.example/skribbl
+## Environment Variables
+
+### Backend
+
+Create `backend/.env` if you want to override defaults:
+
+```env
 PORT=5000
+CLIENT_URL=http://localhost:5173
 ```
 
-Current deployed backend URL used before this refactor: `https://skibble-io.onrender.com`.
+### Frontend
 
-Frontend URL: set this to your deployed Vite site URL in the hosting dashboard and in `CLIENT_URL` for CORS.
+Create `client/.env` for local backend development:
 
-## Production Build
-
-```bash
-cd client
-npm run build
-
-cd ../server
-npm start
+```env
+VITE_BACKEND_URL=http://localhost:5000
 ```
+
+Without `VITE_BACKEND_URL`, the client falls back to the deployed backend URL in [client/src/socket/socket.js](/d:/skribbl.io/client/src/socket/socket.js:1).
+
+## Available Scripts
+
+### Backend
+
+- `npm run dev` starts the server with `nodemon`
+- `npm start` starts the production server
+
+### Frontend
+
+- `npm run dev` starts the Vite dev server
+- `npm run build` creates a production build
+- `npm run preview` previews the built app
+- `npm run lint` runs ESLint
+
+## HTTP Endpoints
+
+- `GET /` basic backend status text
+- `GET /health` JSON health payload
+- `GET /rooms/public` public lobby list
+- `GET /words/categories` available drawing categories
+
+## Socket Events
+
+### Room Flow
+
+- `create_room`
+- `join_room`
+- `player_joined`
+- `player_left`
+- `start_game`
+- `game_state`
+
+### Round Flow
+
+- `round_start`
+- `word_chosen`
+- `round_end`
+- `game_over`
+
+### Drawing Flow
+
+- `draw_start`
+- `draw_move`
+- `draw_end`
+- `draw_data`
+- `canvas_clear`
+- `draw_undo`
+
+### Chat / Guessing
+
+- `guess`
+- `guess_result`
+- `chat_message`
 
 ## Notes
 
-- Room and live game state are kept in memory for low-latency Socket.IO gameplay.
-- `server/src/config/db.js` connects with `process.env.MONGO_URI` and stores completed game scores in the `scores` collection.
-- On first successful MongoDB connection, the backend seeds the `words` collection with the built-in default categories if it is empty.
-- If you use MongoDB Atlas, add your backend host's outbound IP address to the Atlas Network Access allowlist.
-- The frontend can be deployed to Vercel, Netlify, or any static host. The backend must run on a host that supports persistent WebSocket connections, such as Render, Fly.io, Railway, or a VPS.
+- Room and game state are stored in memory on the backend.
+- Players cannot join a room after the game has already started.
+- Word categories currently come from the static word bank in [backend/utils/words.js](/d:/skribbl.io/backend/utils/words.js:1).
+- The frontend includes UI fields for language and word mode, but the backend game flow currently uses category, hints, rounds, draw time, max players, privacy, and word choices.
+
+## Recent Fixes
+
+- Fixed backend room settings so `wordChoices` now respects the value selected in the UI instead of always forcing `3`.
+- Fixed drawing state so a completed stroke is stored as one full path on the server, which keeps undo behavior aligned with the client-side canvas model.

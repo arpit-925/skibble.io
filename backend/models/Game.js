@@ -15,6 +15,7 @@ class Game {
     this.correctGuessers = [];
     this.timer = null;
     this.strokes = [];
+    this.activeStrokes = new Map();
   }
 
   resetForNewGame(settings) {
@@ -30,6 +31,7 @@ class Game {
     this.revealedIndexes = [];
     this.correctGuessers = [];
     this.strokes = [];
+    this.activeStrokes = new Map();
   }
 
   startNextTurn(players, wordOptions) {
@@ -65,6 +67,7 @@ class Game {
     this.revealedIndexes = [];
     this.correctGuessers = [];
     this.strokes = [];
+    this.activeStrokes = new Map();
 
     return { type: "round_start", drawer };
   }
@@ -114,12 +117,40 @@ class Game {
     return maskWord(this.selectedWord, this.revealedIndexes);
   }
 
+  startStroke({ socketId, color, size, mode, point, timestamp }) {
+    if (!socketId || !point) return;
+
+    this.activeStrokes.set(socketId, {
+      color,
+      size,
+      mode,
+      timestamp,
+      points: [point],
+    });
+  }
+
+  appendStrokePoint(socketId, point) {
+    const stroke = this.activeStrokes.get(socketId);
+    if (!stroke || !point) return;
+
+    stroke.points.push(point);
+  }
+
+  finishStroke(socketId) {
+    const stroke = this.activeStrokes.get(socketId);
+    if (!stroke) return;
+
+    this.activeStrokes.delete(socketId);
+    this.strokes.push(stroke);
+  }
+
   addStroke(stroke) {
     this.strokes.push(stroke);
   }
 
   clearCanvas() {
     this.strokes = [];
+    this.activeStrokes.clear();
   }
 
   undoLastStroke() {
