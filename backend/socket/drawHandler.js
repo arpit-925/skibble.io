@@ -1,5 +1,5 @@
 function registerDrawHandler({ socket, services }) {
-  socket.on("draw_start", ({ roomId, point, color, size } = {}) => {
+  socket.on("draw_start", ({ roomId, point, color, size, mode } = {}) => {
     const membership = services.findMembershipBySocket(socket.id);
     const room = membership?.room || services.getRoom(roomId);
     const player = membership?.player;
@@ -13,6 +13,7 @@ function registerDrawHandler({ socket, services }) {
       point,
       color,
       size,
+      mode,
       socketId: socket.id,
       timestamp: Date.now(),
     };
@@ -22,7 +23,7 @@ function registerDrawHandler({ socket, services }) {
     services.io.to(room.id).emit("draw_data", stroke);
   });
 
-  socket.on("draw_move", ({ roomId, point, color, size } = {}) => {
+  socket.on("draw_move", ({ roomId, point, color, size, mode } = {}) => {
     const membership = services.findMembershipBySocket(socket.id);
     const room = membership?.room || services.getRoom(roomId);
     const player = membership?.player;
@@ -36,6 +37,7 @@ function registerDrawHandler({ socket, services }) {
       point,
       color,
       size,
+      mode,
       socketId: socket.id,
       timestamp: Date.now(),
     };
@@ -66,7 +68,10 @@ function registerDrawHandler({ socket, services }) {
     if (!services.canDraw(room, player)) return;
 
     room.game.clearCanvas();
-    services.io.to(room.id).emit("canvas_clear");
+    services.io.to(room.id).emit("canvas_clear", {
+      socketId: socket.id,
+      timestamp: Date.now(),
+    });
   });
 
   socket.on("draw_undo", ({ roomId } = {}) => {
@@ -77,7 +82,10 @@ function registerDrawHandler({ socket, services }) {
     if (!services.canDraw(room, player)) return;
 
     room.game.undoLastStroke();
-    services.io.to(room.id).emit("draw_undo");
+    services.io.to(room.id).emit("draw_undo", {
+      socketId: socket.id,
+      timestamp: Date.now(),
+    });
   });
 }
 

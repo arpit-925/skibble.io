@@ -34,7 +34,9 @@ export default function useCanvas({ roomId, isDrawer, color, size, mode }) {
   }, []);
 
   useEffect(() => {
-    const handleStart = ({ point, color: remoteColor, size: remoteSize, mode: remoteMode }) => {
+    const handleStart = ({ point, color: remoteColor, size: remoteSize, mode: remoteMode, socketId }) => {
+      if (socketId === socket.id) return;
+
       activeStrokeRef.current = {
         color: remoteColor,
         size: remoteSize,
@@ -43,7 +45,9 @@ export default function useCanvas({ roomId, isDrawer, color, size, mode }) {
       };
     };
 
-    const handleMove = ({ point, color: remoteColor, size: remoteSize, mode: remoteMode }) => {
+    const handleMove = ({ point, color: remoteColor, size: remoteSize, mode: remoteMode, socketId }) => {
+      if (socketId === socket.id) return;
+
       drawRemotePoint(point, {
         color: remoteColor,
         size: remoteSize,
@@ -51,18 +55,24 @@ export default function useCanvas({ roomId, isDrawer, color, size, mode }) {
       });
     };
 
-    const handleEnd = () => {
+    const handleEnd = ({ socketId } = {}) => {
+      if (socketId === socket.id) return;
+
       if (activeStrokeRef.current) strokesRef.current.push(activeStrokeRef.current);
       activeStrokeRef.current = null;
     };
 
-    const handleClear = () => {
+    const handleClear = ({ socketId } = {}) => {
+      if (socketId === socket.id) return;
+
       strokesRef.current = [];
       activeStrokeRef.current = null;
       if (contextRef.current) replayStrokes(contextRef.current, []);
     };
 
-    const handleUndo = () => {
+    const handleUndo = ({ socketId } = {}) => {
+      if (socketId === socket.id) return;
+
       strokesRef.current = strokesRef.current.slice(0, -1);
       if (contextRef.current) replayStrokes(contextRef.current, strokesRef.current);
     };
